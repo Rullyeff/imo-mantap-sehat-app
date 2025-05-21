@@ -26,7 +26,7 @@ const Login = () => {
   // Check if user is already logged in and redirect to proper dashboard
   useRoleRedirect();
 
-  const handleLogin = async (role: string) => async (e: React.FormEvent) => {
+  const handleLogin = (role: string) => (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -43,17 +43,53 @@ const Login = () => {
     try {
       // Use demo accounts for testing
       if (role === 'patient' && email === 'patient@demo.com' && password === 'password123') {
-        await signIn(email, password);
-        navigate('/patient-dashboard');
+        signIn(email, password)
+          .then(() => navigate('/patient-dashboard'))
+          .catch((error) => {
+            console.error('Login error:', error);
+            toast({
+              title: "Login Gagal",
+              description: "Email atau password tidak valid",
+              variant: "destructive",
+            });
+          })
+          .finally(() => setIsLoading(false));
       } else if (role === 'nurse' && email === 'nurse@demo.com' && password === 'password123') {
-        await signIn(email, password);
-        navigate('/nurse-dashboard');
+        signIn(email, password)
+          .then(() => navigate('/nurse-dashboard'))
+          .catch((error) => {
+            console.error('Login error:', error);
+            toast({
+              title: "Login Gagal",
+              description: "Email atau password tidak valid",
+              variant: "destructive",
+            });
+          })
+          .finally(() => setIsLoading(false));
       } else if (role === 'admin' && email === 'admin@demo.com' && password === 'password123') {
-        await signIn(email, password);
-        navigate('/admin-dashboard');
+        signIn(email, password)
+          .then(() => navigate('/admin-dashboard'))
+          .catch((error) => {
+            console.error('Login error:', error);
+            toast({
+              title: "Login Gagal",
+              description: "Email atau password tidak valid",
+              variant: "destructive",
+            });
+          })
+          .finally(() => setIsLoading(false));
       } else {
         // Real authentication
-        await signIn(email, password);
+        signIn(email, password)
+          .catch((error) => {
+            console.error('Login error:', error);
+            toast({
+              title: "Login Gagal",
+              description: "Email atau password tidak valid",
+              variant: "destructive",
+            });
+          })
+          .finally(() => setIsLoading(false));
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -62,7 +98,6 @@ const Login = () => {
         description: "Email atau password tidak valid",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

@@ -34,34 +34,45 @@ const AdminDashboard: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      // Get user role counts
-      const { data: userRoleCounts, error: userRoleError } = await supabase
-        .rpc('count_users_by_role');
-        
-      if (userRoleError) {
-        console.error('Error counting users by role:', userRoleError);
-        
+      // Get user counts by querying the user_roles table directly
+      const { data: patientRoles, error: patientError } = await supabase
+        .from('user_roles')
+        .select('count')
+        .eq('role', 'patient')
+        .single();
+
+      const { data: nurseRoles, error: nurseError } = await supabase
+        .from('user_roles')
+        .select('count')
+        .eq('role', 'nurse')
+        .single();
+
+      if (!patientError && patientRoles) {
+        setStats(prev => ({ ...prev, totalPatients: Number(patientRoles.count) || 0 }));
+      } else {
         // Fall back to manual counting
-        const { data: roles, error: rolesError } = await supabase
+        const { data: patientData, error: patientDataError } = await supabase
           .from('user_roles')
-          .select('role');
+          .select('*')
+          .eq('role', 'patient');
           
-        if (rolesError) {
-          console.error('Error fetching user roles:', rolesError);
-        } else {
-          const patientCount = roles.filter(r => r.role === 'patient').length;
-          const nurseCount = roles.filter(r => r.role === 'nurse').length;
-          setStats(prev => ({ ...prev, totalPatients: patientCount, totalNurses: nurseCount }));
+        if (!patientDataError && patientData) {
+          setStats(prev => ({ ...prev, totalPatients: patientData.length }));
         }
-      } else if (userRoleCounts) {
-        const patientData = userRoleCounts.find((item: UserCount) => item.role === 'patient');
-        const nurseData = userRoleCounts.find((item: UserCount) => item.role === 'nurse');
-        
-        setStats(prev => ({ 
-          ...prev, 
-          totalPatients: patientData?.count || 0, 
-          totalNurses: nurseData?.count || 0 
-        }));
+      }
+
+      if (!nurseError && nurseRoles) {
+        setStats(prev => ({ ...prev, totalNurses: Number(nurseRoles.count) || 0 }));
+      } else {
+        // Fall back to manual counting
+        const { data: nurseData, error: nurseDataError } = await supabase
+          .from('user_roles')
+          .select('*')
+          .eq('role', 'nurse');
+          
+        if (!nurseDataError && nurseData) {
+          setStats(prev => ({ ...prev, totalNurses: nurseData.length }));
+        }
       }
       
       // Get medicine count

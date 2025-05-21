@@ -27,7 +27,7 @@ const Register = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
-  const handleRegister = async (role: string) => async (e: React.FormEvent) => {
+  const handleRegister = (role: string) => (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!agreedToTerms) {
@@ -64,28 +64,29 @@ const Register = () => {
     const firstName = nameParts[0] || "";
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
     
-    try {
-      await signUp(
-        email, 
-        password, 
-        firstName,
-        lastName,
-        phone,
-        role as UserRole
-      );
-      
+    signUp(
+      email, 
+      password, 
+      firstName,
+      lastName,
+      phone,
+      role as UserRole
+    )
+    .then(() => {
       // Registration success toast is shown in the signUp function
       navigate("/login");
-    } catch (error) {
+    })
+    .catch(error => {
       console.error('Registration error:', error);
       toast({
         title: "Pendaftaran Gagal",
         description: "Terjadi kesalahan saat pendaftaran. Silakan coba lagi.",
         variant: "destructive",
       });
-    } finally {
+    })
+    .finally(() => {
       setIsLoading(false);
-    }
+    });
   };
 
   const roleNames = {

@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Users, PlusCircle, ClipboardList, User, Badge, BarChart3, PieChart } from "lucide-react";
+import { Loader2, Users, PlusCircle, ClipboardList, User, BarChart3, PieChart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface Patient {
@@ -263,9 +263,9 @@ const NurseDashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <Badge className="mx-auto mb-3 p-3" variant="outline">
+                <div className="mx-auto mb-3 p-3 flex justify-center">
                   <Users className="h-6 w-6 text-gray-400" />
-                </Badge>
+                </div>
                 <h3 className="text-lg font-semibold mb-1">Belum Ada Pasien</h3>
                 <p className="text-gray-500 mb-4">
                   Anda belum memiliki pasien yang terdaftar.
