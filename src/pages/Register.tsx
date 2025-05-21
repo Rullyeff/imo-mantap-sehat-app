@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MainLayout from "@/components/layout/MainLayout";
 import { useToast } from "@/components/ui/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/contexts/AuthContext";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -17,10 +20,14 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"patient" | "nurse">("patient");
   
   const { toast } = useToast();
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
 
-  const handleRegister = (role: string) => (e: React.FormEvent) => {
+  const handleRegister = async (role: string) => async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!agreedToTerms) {
@@ -41,18 +48,43 @@ const Register = () => {
       return;
     }
     
-    // Demo registration functionality
-    if (name && email && password && phone) {
-      toast({
-        title: "Pendaftaran Berhasil",
-        description: `Akun ${roleNames[role as keyof typeof roleNames]} telah berhasil dibuat`,
-      });
-    } else {
+    if (!name || !email || !password || !phone) {
       toast({
         title: "Pendaftaran Gagal",
         description: "Semua field harus diisi",
         variant: "destructive",
       });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    // Extract first and last name
+    const nameParts = name.split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+    
+    try {
+      await signUp(
+        email, 
+        password, 
+        firstName,
+        lastName,
+        phone,
+        role as UserRole
+      );
+      
+      // Registration success toast is shown in the signUp function
+      navigate("/login");
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Pendaftaran Gagal",
+        description: "Terjadi kesalahan saat pendaftaran. Silakan coba lagi.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -73,7 +105,12 @@ const Register = () => {
               </CardDescription>
             </CardHeader>
             
-            <Tabs defaultValue="patient" className="px-6">
+            <Tabs 
+              defaultValue="patient" 
+              className="px-6"
+              value={selectedRole}
+              onValueChange={(value) => setSelectedRole(value as "patient" | "nurse")}
+            >
               <TabsList className="grid grid-cols-2 mb-4">
                 <TabsTrigger value="patient">Pasien</TabsTrigger>
                 <TabsTrigger value="nurse">Perawat</TabsTrigger>
@@ -91,6 +128,7 @@ const Register = () => {
                           value={name} 
                           onChange={(e) => setName(e.target.value)}
                           required
+                          disabled={isLoading}
                         />
                       </div>
                       <div className="space-y-2">
@@ -102,6 +140,7 @@ const Register = () => {
                           value={email} 
                           onChange={(e) => setEmail(e.target.value)}
                           required
+                          disabled={isLoading}
                         />
                       </div>
                       <div className="space-y-2">
@@ -112,6 +151,7 @@ const Register = () => {
                           value={phone} 
                           onChange={(e) => setPhone(e.target.value)}
                           required
+                          disabled={isLoading}
                         />
                       </div>
                       <div className="space-y-2">
@@ -123,6 +163,7 @@ const Register = () => {
                           value={password} 
                           onChange={(e) => setPassword(e.target.value)}
                           required
+                          disabled={isLoading}
                         />
                       </div>
                       <div className="space-y-2">
@@ -134,6 +175,7 @@ const Register = () => {
                           value={confirmPassword} 
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           required
+                          disabled={isLoading}
                         />
                       </div>
                       <div className="flex items-start space-x-2 pt-2">
@@ -141,6 +183,7 @@ const Register = () => {
                           id={`${role}-terms`} 
                           checked={agreedToTerms}
                           onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                          disabled={isLoading}
                         />
                         <Label htmlFor={`${role}-terms`} className="text-sm leading-none">
                           Saya menyetujui {" "}
@@ -153,8 +196,19 @@ const Register = () => {
                     </CardContent>
 
                     <CardFooter className="flex-col space-y-4">
-                      <Button type="submit" className="w-full bg-imo-primary hover:bg-imo-secondary">
-                        Daftar sebagai {roleNames[role as keyof typeof roleNames]}
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-imo-primary hover:bg-imo-secondary"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Mendaftarkan...
+                          </>
+                        ) : (
+                          <>Daftar sebagai {roleNames[role as keyof typeof roleNames]}</>
+                        )}
                       </Button>
                       <p className="text-center text-sm text-gray-600">
                         Sudah memiliki akun?{" "}
