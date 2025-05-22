@@ -28,7 +28,12 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            {/* Make Register accessible only to admins */}
+            <Route path="/register" element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Register />
+              </ProtectedRoute>
+            } />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             

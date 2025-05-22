@@ -1,5 +1,5 @@
+
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,12 +96,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ role }) => {
           </Link>
           <DemoCredentialsButton role={role} onFill={fillDemoCredentials} />
         </div>
-        <p className="text-center text-sm text-gray-600">
-          Belum punya akun?{" "}
-          <Link to="/register" className="text-imo-primary hover:underline">
-            Daftar
-          </Link>
-        </p>
+        {/* Removed registration link */}
       </CardFooter>
     </form>
   );

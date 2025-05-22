@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Users, Database, Activity, PlusCircle, ShieldCheck, User, HeartPulse } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AddUserForm from "@/components/admin/AddUserForm";
 
 interface UserCount {
   role: string;
@@ -23,6 +24,7 @@ const AdminDashboard: React.FC = () => {
   });
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -151,172 +153,226 @@ const AdminDashboard: React.FC = () => {
           </p>
         </div>
         
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center text-blue-700">
-                <Users className="mr-2 h-5 w-5" /> Pasien
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{stats.totalPatients}</p>
-              <p className="text-sm text-gray-500 mt-1">Total pasien terdaftar</p>
-            </CardContent>
-          </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="users">Kelola Pengguna</TabsTrigger>
+            <TabsTrigger value="settings">Pengaturan</TabsTrigger>
+          </TabsList>
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center text-green-700">
-                <HeartPulse className="mr-2 h-5 w-5" /> Perawat
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{stats.totalNurses}</p>
-              <p className="text-sm text-gray-500 mt-1">Total perawat terdaftar</p>
-            </CardContent>
-          </Card>
+          <TabsContent value="overview" className="mt-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center text-blue-700">
+                    <Users className="mr-2 h-5 w-5" /> Pasien
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">{stats.totalPatients}</p>
+                  <p className="text-sm text-gray-500 mt-1">Total pasien terdaftar</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center text-green-700">
+                    <HeartPulse className="mr-2 h-5 w-5" /> Perawat
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">{stats.totalNurses}</p>
+                  <p className="text-sm text-gray-500 mt-1">Total perawat terdaftar</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center text-amber-700">
+                    <Database className="mr-2 h-5 w-5" /> Obat
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">{stats.totalMedicines}</p>
+                  <p className="text-sm text-gray-500 mt-1">Total jenis obat</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg flex items-center text-indigo-700">
+                    <Activity className="mr-2 h-5 w-5" /> Resep
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold">{stats.totalPrescriptions}</p>
+                  <p className="text-sm text-gray-500 mt-1">Total resep aktif</p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Recent Users */}
+            <Card className="mb-8">
+              <CardHeader className="bg-imo-primary text-white rounded-t-lg">
+                <CardTitle className="flex items-center">
+                  <User className="mr-2" /> Pengguna Terbaru
+                </CardTitle>
+                <CardDescription className="text-gray-100">
+                  Daftar pengguna yang baru mendaftar
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {loading ? (
+                  <div className="flex justify-center p-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-imo-primary" />
+                  </div>
+                ) : recentUsers.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left border-b">
+                          <th className="pb-3 pl-4">Nama</th>
+                          <th className="pb-3">Peran</th>
+                          <th className="pb-3">Terdaftar</th>
+                          <th className="pb-3 text-right pr-4">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentUsers.map((user) => (
+                          <tr key={user.id} className="border-b hover:bg-gray-50">
+                            <td className="py-4 pl-4">
+                              {user.first_name} {user.last_name}
+                            </td>
+                            <td className="py-4">
+                              <span className={`px-2 py-1 rounded-full text-xs ${getRoleBadgeClass(user.user_roles[0]?.role)}`}>
+                                {getRoleLabel(user.user_roles[0]?.role)}
+                              </span>
+                            </td>
+                            <td className="py-4">
+                              {new Date(user.created_at).toLocaleDateString('id-ID')}
+                            </td>
+                            <td className="py-4 text-right pr-4">
+                              <Button size="sm" variant="outline">
+                                Detail
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    Belum ada pengguna terdaftar.
+                  </p>
+                )}
+              </CardContent>
+              {recentUsers.length > 0 && (
+                <CardFooter className="border-t pt-4 flex justify-center">
+                  <Button 
+                    variant="ghost" 
+                    className="text-imo-primary flex items-center"
+                    onClick={() => setActiveTab("users")}
+                  >
+                    <User className="mr-1 h-4 w-4" /> Kelola Semua Pengguna
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+            
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Users className="mr-2 h-5 w-5" /> Kelola Pengguna
+                  </CardTitle>
+                  <CardDescription>
+                    Tambah, edit, atau hapus akun pengguna
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full" onClick={() => setActiveTab("users")}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Tambah Pengguna Baru
+                  </Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Database className="mr-2 h-5 w-5" /> Kelola Obat
+                  </CardTitle>
+                  <CardDescription>
+                    Kelola basis data obat dan dosisnya
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Tambah Obat Baru
+                  </Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <ShieldCheck className="mr-2 h-5 w-5" /> Pengaturan Sistem
+                  </CardTitle>
+                  <CardDescription>
+                    Konfigurasi dan keamanan sistem
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" className="w-full" onClick={() => setActiveTab("settings")}>
+                    Buka Pengaturan
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
           
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center text-amber-700">
-                <Database className="mr-2 h-5 w-5" /> Obat
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{stats.totalMedicines}</p>
-              <p className="text-sm text-gray-500 mt-1">Total jenis obat</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center text-indigo-700">
-                <Activity className="mr-2 h-5 w-5" /> Resep
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{stats.totalPrescriptions}</p>
-              <p className="text-sm text-gray-500 mt-1">Total resep aktif</p>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Recent Users */}
-        <Card className="mb-8">
-          <CardHeader className="bg-imo-primary text-white rounded-t-lg">
-            <CardTitle className="flex items-center">
-              <User className="mr-2" /> Pengguna Terbaru
-            </CardTitle>
-            <CardDescription className="text-gray-100">
-              Daftar pengguna yang baru mendaftar
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {loading ? (
-              <div className="flex justify-center p-4">
-                <Loader2 className="h-6 w-6 animate-spin text-imo-primary" />
+          <TabsContent value="users" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <AddUserForm />
               </div>
-            ) : recentUsers.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left border-b">
-                      <th className="pb-3 pl-4">Nama</th>
-                      <th className="pb-3">Peran</th>
-                      <th className="pb-3">Terdaftar</th>
-                      <th className="pb-3 text-right pr-4">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentUsers.map((user) => (
-                      <tr key={user.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 pl-4">
-                          {user.first_name} {user.last_name}
-                        </td>
-                        <td className="py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs ${getRoleBadgeClass(user.user_roles[0]?.role)}`}>
-                            {getRoleLabel(user.user_roles[0]?.role)}
-                          </span>
-                        </td>
-                        <td className="py-4">
-                          {new Date(user.created_at).toLocaleDateString('id-ID')}
-                        </td>
-                        <td className="py-4 text-right pr-4">
-                          <Button size="sm" variant="outline">
-                            Detail
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              
+              <div>
+                <Card>
+                  <CardHeader className="bg-imo-primary text-white rounded-t-lg">
+                    <CardTitle>Daftar Pengguna</CardTitle>
+                    <CardDescription className="text-gray-100">
+                      Kelola semua pengguna dalam sistem
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <p className="text-center text-gray-500 py-4">
+                      Fitur manajemen pengguna lengkap akan segera hadir
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">
-                Belum ada pengguna terdaftar.
-              </p>
-            )}
-          </CardContent>
-          {recentUsers.length > 0 && (
-            <CardFooter className="border-t pt-4 flex justify-center">
-              <Button variant="ghost" className="text-imo-primary flex items-center">
-                <User className="mr-1 h-4 w-4" /> Kelola Semua Pengguna
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
-        
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="mr-2 h-5 w-5" /> Kelola Pengguna
-              </CardTitle>
-              <CardDescription>
-                Tambah, edit, atau hapus akun pengguna
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">
-                <PlusCircle className="mr-2 h-4 w-4" /> Tambah Pengguna Baru
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </TabsContent>
           
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Database className="mr-2 h-5 w-5" /> Kelola Obat
-              </CardTitle>
-              <CardDescription>
-                Kelola basis data obat dan dosisnya
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">
-                <PlusCircle className="mr-2 h-4 w-4" /> Tambah Obat Baru
-              </Button>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <ShieldCheck className="mr-2 h-5 w-5" /> Pengaturan Sistem
-              </CardTitle>
-              <CardDescription>
-                Konfigurasi dan keamanan sistem
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="outline" className="w-full">
-                Buka Pengaturan
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+          <TabsContent value="settings" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pengaturan Sistem</CardTitle>
+                <CardDescription>
+                  Konfigurasikan pengaturan sistem IMO MANTAP
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center text-gray-500 py-4">
+                  Pengaturan sistem akan segera tersedia
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );
