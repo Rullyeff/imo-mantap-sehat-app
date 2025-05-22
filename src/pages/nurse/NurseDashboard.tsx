@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import MainLayout from "@/components/layout/MainLayout";
+import AuthenticatedLayout from "@/components/layout/AuthenticatedLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -155,9 +155,9 @@ const NurseDashboard: React.FC = () => {
   };
 
   return (
-    <MainLayout>
-      <div className="container-custom py-8">
-        <div className="mb-8">
+    <AuthenticatedLayout>
+      <div className="space-y-6">
+        <div>
           <h1 className="text-3xl font-bold mb-2">Selamat Datang, {profile?.first_name || 'Perawat'}</h1>
           <p className="text-gray-600">
             Monitor pasien dan pantau kepatuhan minum obat dari dashboard ini.
@@ -286,7 +286,7 @@ const NurseDashboard: React.FC = () => {
           )}
         </Card>
       </div>
-    </MainLayout>
+    </AuthenticatedLayout>
   );
 };
 

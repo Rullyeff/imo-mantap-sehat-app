@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import NurseDashboard from "./pages/nurse/NurseDashboard";
+import NursePatients from "./pages/nurse/NursePatients";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -37,19 +38,26 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             
-            {/* Protected routes by role */}
+            {/* Patient Routes */}
             <Route path="/patient-dashboard" element={
               <ProtectedRoute allowedRoles={["patient"]}>
                 <PatientDashboard />
               </ProtectedRoute>
             } />
             
+            {/* Nurse Routes */}
             <Route path="/nurse-dashboard" element={
               <ProtectedRoute allowedRoles={["nurse"]}>
                 <NurseDashboard />
               </ProtectedRoute>
             } />
+            <Route path="/nurse-patients" element={
+              <ProtectedRoute allowedRoles={["nurse"]}>
+                <NursePatients />
+              </ProtectedRoute>
+            } />
             
+            {/* Admin Routes */}
             <Route path="/admin-dashboard" element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />

@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import MainLayout from "@/components/layout/MainLayout";
+import AuthenticatedLayout from "@/components/layout/AuthenticatedLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -171,9 +170,9 @@ const PatientDashboard: React.FC = () => {
   };
 
   return (
-    <MainLayout>
-      <div className="container-custom py-8">
-        <div className="mb-8">
+    <AuthenticatedLayout>
+      <div className="space-y-6">
+        <div>
           <h1 className="text-3xl font-bold mb-2">Selamat Datang, {profile?.first_name || 'Pasien'}</h1>
           <p className="text-gray-600">
             Pantau jadwal minum obat dan riwayat pengobatan Anda di sini.
@@ -181,7 +180,6 @@ const PatientDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
           {/* Left Column - Quick Actions */}
           <div className="lg:col-span-1 space-y-6">
             <Card>
@@ -291,7 +289,7 @@ const PatientDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </AuthenticatedLayout>
   );
 };
 

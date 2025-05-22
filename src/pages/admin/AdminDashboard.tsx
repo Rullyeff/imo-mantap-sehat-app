@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import MainLayout from "@/components/layout/MainLayout";
+import { useSearchParams } from "react-router-dom";
+import AuthenticatedLayout from "@/components/layout/AuthenticatedLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,6 +18,8 @@ interface UserCount {
 
 const AdminDashboard: React.FC = () => {
   const { user, profile } = useAuth();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "overview";
   const [stats, setStats] = useState({
     totalPatients: 0,
     totalNurses: 0,
@@ -24,7 +28,7 @@ const AdminDashboard: React.FC = () => {
   });
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,6 +37,13 @@ const AdminDashboard: React.FC = () => {
       fetchRecentUsers();
     }
   }, [user]);
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const fetchStats = async () => {
     try {
@@ -144,9 +155,9 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <MainLayout>
-      <div className="container-custom py-8">
-        <div className="mb-8">
+    <AuthenticatedLayout>
+      <div className="space-y-6">
+        <div>
           <h1 className="text-3xl font-bold mb-2">Dashboard Admin</h1>
           <p className="text-gray-600">
             Selamat datang, {profile?.first_name || 'Admin'}. Kelola pengguna, obat, dan pantau aktivitas sistem.
@@ -374,7 +385,7 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </AuthenticatedLayout>
   );
 };
 
